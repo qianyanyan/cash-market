@@ -317,7 +317,7 @@
             vm.tableData = res.data.data
             vm.allData = res.data.data
             vm.total = res.data.total
-            vm.fPage(vm.allData)
+            // vm.fPage(vm.allData)
             for (var i = 0; i < vm.allData.length; i++) {
               vm.allData[i].menuStatus = vm.allData[i].menuStatus == 0 ? '启用' : '禁用'
             }

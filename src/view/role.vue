@@ -272,6 +272,7 @@
         let self = this;
         let userParams = {
           roleId: this.num
+          // isNotroleId: this.num
         };
         getApi('selectUser', userParams, function (res) {
           if (res.data.code === 200) {
@@ -414,7 +415,8 @@
       searchUser() {
         let self = this;
         let userParams = {
-          roleId: this.num
+          
+          isNotroleId: this.num
         };
         getApi('searchUserForRole', userParams, function (res) {
           if (res.data.code === 200) {
