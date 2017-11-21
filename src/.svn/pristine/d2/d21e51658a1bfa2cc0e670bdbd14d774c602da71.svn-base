@@ -54,7 +54,7 @@
         <!--新增用户界面-->
         <el-dialog v-model="addFormVisible" :close-on-click-modal="false">
           <h2 class="addRole">为{{roles}}添加用户</h2>
-          <el-table ref="singleTable" :data="searchUsers" @select="seleId" @select-all ="seleId" highlight-current-row
+          <el-table ref="singleTable" :data="searchUsers" @select="seleId" @select-all ="seleId" highlight-current-row 
                     v-loading="listLoading" style="width: 100%">
             <el-table-column type="selection" width="55"></el-table-column>
             <el-table-column property="accounts" label="账户" width="280">
@@ -109,7 +109,7 @@
 </template>
 
 <script>
-  import { getApi } from '../api/api'
+  import { searchRole, modifyRole, selectUser, DeleteRoleBatch, deleteSysUserRoleBatch, removeUser, addRole, searchUserForRole, addUserRole } from '../api/api'
   import global from '../assets/js/global'
   export default {
     data() {
@@ -187,35 +187,35 @@
       this.deleteShow = global.judgePermissionName('role:delete', this.$store.getters.getPermissionName)
     },
     watch: {
-
-
+     
+      
     },
     computed: {
       datas() {
         const self = this;
         if(self.select_words){
-
-          let pageD = self.userData.filter(function (d) {
-            let is_del = false;
-            for (let i = 0; i < self.del_list.length; i++) {
-              if (d.name === self.del_list[i].name) {
-                is_del = true;
-                break;
+               
+            let pageD = self.userData.filter(function (d) {
+              let is_del = false;
+              for (let i = 0; i < self.del_list.length; i++) {
+                if (d.name === self.del_list[i].name) {
+                  is_del = true;
+                  break;
+                }
               }
-            }
-            let a = 0;
-            if (!is_del) {
-              if (d.accounts.indexOf(self.select_words) > -1 || d.roleName.indexOf(self.select_words) > -1) {
-                return d;
+              let a = 0;
+              if (!is_del) {
+                if (d.accounts.indexOf(self.select_words) > -1 || d.roleName.indexOf(self.select_words) > -1) {
+                  return d;
+                }
               }
-            }
-          })
-          self.total = pageD.length;
-          pageD = pageD.slice((self.currentPage - 1) * 10, (self.currentPage - 1) * 10 + self.pageSize)
-          return pageD
+            })
+            this.total = pageD.length;
+             pageD = pageD.slice((this.currentPage - 1) * 10, (this.currentPage - 1) * 10 + this.pageSize)
+            return pageD
         }else{
-          self.total = self.userData.length;
-          return self.pageData
+            this.total = self.userData.length;
+            return this.pageData
         }
       },
 
@@ -230,7 +230,7 @@
       fPage(list, type) {
         if (type == 0) {
           this.pageData = list.slice((this.currentPage - 1) * 10, (this.currentPage - 1) * 10 + this.pageSize)
-
+         
         } else {
           this.searchUsers = list.slice((this.currentPageadd - 1) * 10, (this.currentPageadd - 1) * 10 + this.addpageSize)
         }
@@ -260,26 +260,28 @@
       },
       getData() {
         let self = this;
-        getApi('searchRole', function (res) {
-          if (res.data.code === 200) {
-            self.tableData = res.data.data;
-            self.role = res.data.data[0].roleName
-            self.roles = res.data.data[0].roleExplain;
+        searchRole().then(data => {
+          if (data.data.code === 200) {
+            self.tableData = data.data.data;
+            this.role = data.data.data[0].roleName
+            this.roles = data.data.data[0].roleExplain;
+
           }
         })
       },
       getUser() {
         let self = this;
         let userParams = {
-          roleId: this.num
+          isNotroleId: this.num
         };
-        getApi('selectUser', userParams, function (res) {
-          if (res.data.code === 200) {
-            self.total = res.data.total;
-            self.userData = res.data.data;
+        selectUser(userParams).then(data => {
+          if (data.data.code === 200) {
+            this.total = data.data.total;
+            self.userData = data.data.data;
             self.fPage(self.userData, 0)
           }
         })
+
       },
       filterTag(value, row) {
         return row.tag === value;
@@ -312,27 +314,28 @@
           let obj = {
             id: this.num
           }
-          let vm = this
           if (type == 0) {
-            getApi('deleteRoleBatch', obj, function (res) {
-              if (res.data.code == 200) {
-                vm.listLoading = false
-                vm.$message({
+            DeleteRoleBatch(obj).then((data) => {
+              if (data.data.code == 200) {
+                this.listLoading = false
+                this.$message({
                   message: '删除成功',
                   type: 'success'
                 })
-                vm.getData();
+                this.getData();
+
               }
             })
           } else {
-            getApi('deleteSysUserRoleBatch', para, function (res) {
-              if (res.data.code == 200) {
-                vm.listLoading = false
-                vm.$message({
+            deleteSysUserRoleBatch(para).then((data) => {
+              if (data.data.code == 200) {
+                this.listLoading = false
+                this.$message({
                   message: '删除成功',
                   type: 'success'
                 })
-                vm.getUser();
+                this.getUser();
+
               }
             })
           }
@@ -367,27 +370,26 @@
                 roleName: this.editForm.roleName,
                 roleExplain: this.editForm.roleExplain,
               }
-              let vm = this
               if (type == 1) {
-                getApi('modifyRole', userParams, function (res) {
-                  if (res.data.code == 200 && res.data.message.toLowerCase() == 'ok') {
-                    vm.editFormVisible = vm.editLoading = false
-                    vm.$message({
+                modifyRole(userParams).then(data => {
+                  if (data.data.code == 200 && data.data.message.toLowerCase() == 'ok') {
+                    this.editFormVisible = this.editLoading = false
+                    this.$message({
                       message: '提交成功',
                       type: 'success'
                     })
-                    vm.getData()
+                    this.getData()
                   }
                 })
               } else {
-                getApi('addRole', addParams, function (res) {
-                  if (res.data.code == 200 && res.data.message.toLowerCase() == 'ok') {
-                    vm.addVisible = vm.editLoading = false
-                    vm.$message({
+                addRole(addParams).then(data => {
+                  if (data.data.code == 200 && data.data.message.toLowerCase() == 'ok') {
+                    this.addVisible = this.editLoading = false
+                    this.$message({
                       message: '提交成功',
                       type: 'success'
                     })
-                    vm.getData()
+                    this.getData()
                   }
                 })
               }
@@ -408,19 +410,27 @@
 
       },
       seleId(selection, row) {
+       
         let length = selection.length;
         this.selection = selection;
+        // for (let i = 0; i < length; i++) {
+        //   this.boxId.push(selection[i].id)
+        //   this.boxId = new Set(arr);
+        //   console( this.boxId )
+        // }
+       
       },
       searchUser() {
         let self = this;
         let userParams = {
-          isNotroleId: this.num
+          roleId: this.num
         };
-        getApi('searchUserForRole', userParams, function (res) {
-          if (res.data.code === 200) {
-            self.addUser = res.data.data;
-            self.totalAdd = res.data.total;
-            self.fPage(self.addUser, 1)
+        searchUserForRole(userParams).then(data => {
+          if (data.data.code === 200) {
+            self.addUser = data.data.data;
+            self.totalAdd = data.data.total;
+            this.fPage(self.addUser, 1)
+
           }
         })
       },
@@ -431,9 +441,11 @@
       // 新增
       addSubmit() {
         var  length = this.selection.length;
-        for (let i = 0; i < length; i++) {
+         for (let i = 0; i < length; i++) {
           this.boxId.push(this.selection[i].id);
+          // this.boxId = new Set(arr);
         }
+         console.log( this.boxId )
         if (this.boxId) {
           this.$confirm('确认提交吗？', '提示', {}).then(() => {
             this.addLoading = true
@@ -441,27 +453,27 @@
               roleId: this.num,
               userId: this.boxId
             }
-            let vm = this
-            getApi('addSysUserRoleBatch', para, function (res) {
-              vm.addLoading = vm.addFormVisible = false
-              if (res.data.code == 200 && res.data.message.toLowerCase() == 'ok') {
-                vm.$message({
+            addUserRole(para).then((data) => {
+              this.addLoading = this.addFormVisible = false
+              if (data.data.code == 200 && data.data.message.toLowerCase() == 'ok') {
+                this.$message({
                   message: '提交成功',
                   type: 'success'
                 })
-                vm.getUser()
-              } else if (res.data.code == 400) {
-                vm.$message({
+                this.getUser()
+              } else if (data.data.code == 400) {
+                this.$message({
                   message: '新增角色中有重复信息',
                   type: 'error'
                 })
               } else {
-                vm.$message({
-                  message: res.data.message,
+                this.$message({
+                  message: data.data.message,
                   type: 'error'
                 })
               }
-              vm.boxId =[ ];
+              this.boxId =[ ];
+              console.log(this.boxId)
             })
           })
         }

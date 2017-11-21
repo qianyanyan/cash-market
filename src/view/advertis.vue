@@ -219,7 +219,7 @@
 </template>
 <script>
 
-    import { getApi } from '../api/api'
+    import { getApi, root } from '../api/api'
     import global from '../assets/js/global'
 
     export default {
@@ -427,8 +427,8 @@
                 createStartTime: '',
                 createEndTime: ''
             }
-            
-            this.baseurl = '/apis/uploadPicture'
+
+            this.baseurl = root + '/uploadPicture'
             this.searchCMarket()
             this.searMerchantAd(userParams)
             this.createShow = global.judgePermissionName('advertis:create', this.$store.getters.getPermissionName)
@@ -437,9 +437,9 @@
             this.lookShow = global.judgePermissionName('advertis:view', this.$store.getters.getPermissionName)
 
         },
-         
+
         computed: {
-         
+
 
              searchData () {
                 var search = this.search;
@@ -452,11 +452,11 @@
 
                      this.totalPage =ddd.length
                      ddd = ddd.slice((this.currentPage - 1) * 10, (this.currentPage - 1) * 10 + this.pageSize)
-                    
+
                     return ddd
                 }else{
                   this.totalPage =this.tableData.length
-               
+
                 }
                 return this.tableFData;
             },

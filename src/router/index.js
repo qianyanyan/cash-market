@@ -13,7 +13,7 @@ import Merchant from '../view/merchant'
 import Dictionary from '../view/dictionary'
 import Advertis from '../view/advertis'
 import Test from '../view/test'
-// import store from '../vuex/getters'
+import Err from '../components/404'
 
 Vue.use(Router)
 
@@ -26,6 +26,11 @@ let router = new Router({
       component: Login
     },
     {
+      path: '/404',
+      name: '404',
+      component: Err
+    },
+    {
       path: '/update',
       name: 'update',
       component: Update
@@ -35,6 +40,7 @@ let router = new Router({
       name: 'test',
       component: Test
     },
+    { path: '*', redirect: '/404', hidden: true },
     {
       path: '/',
       component: Layout,

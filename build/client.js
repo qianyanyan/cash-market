@@ -12,6 +12,10 @@ var port = config.build.port
 var proxyTable = config.build.proxyTable
 // 启动一个express服务
 var app = express()
+
+var log = require('./log');
+log.use(app);
+
 // 遍历代理的配置信息,并且使用中间件加载进去
 Object.keys(proxyTable).forEach(function (context) {
   var options = proxyTable[context]
@@ -25,5 +29,12 @@ Object.keys(proxyTable).forEach(function (context) {
 app.use(require('connect-history-api-fallback')())
 // 根据配置信息拼接一个目录路径，然后将该路径下的文件交给express的静态目录管理
 app.use(express.static(path.join(__dirname, '../dist')))
-app.listen(port);
 
+module.exports = app.listen(port, function (err) {
+  if (err) {
+    console.log(err)
+    return
+  } else {
+    console.log('Listening to: ' + port)
+  }
+})

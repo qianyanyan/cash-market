@@ -1,8 +1,6 @@
 import axios from 'axios'
-import router from "../router/index";
 // let base = process.env.API_ROOT
 // let base = 'http://127.0.0.1:3000'
-
 axios.interceptors.request.use(
   config => {
     if (localStorage.getItem('userId') != undefined) {
@@ -10,11 +8,18 @@ axios.interceptors.request.use(
     } else {
 
     }
-
     return config
   },
   err => {
     return Promise.reject(err)
+  }
+)
+axios.interceptors.response.use(
+  response => {
+    return response
+  },
+  error => {
+    return Promise.reject(error.response.data)   // 返回接口返回的错误信息
   }
 )
 
