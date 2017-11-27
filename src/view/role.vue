@@ -54,10 +54,12 @@
         <!--新增用户界面-->
         <el-dialog v-model="addFormVisible" :close-on-click-modal="false">
           <h2 class="addRole">为{{roles}}添加用户</h2>
-          <el-table ref="singleTable" :data="searchUsers" @select="seleId" @select-all ="seleId" highlight-current-row
-                    v-loading="listLoading" style="width: 100%">
-            <el-table-column type="selection" width="55"></el-table-column>
-            <el-table-column property="accounts" label="账户" width="280">
+          <el-table ref="singleTable" :data="searchUsers" @select="seleIdevry" @select-all ="seleId" highlight-current-row
+                    v-loading="listLoading" style="width: 100%" >
+            <el-table-column type="selection" width="55" >
+            <!-- <el-table-column type="selection" width="55"> -->
+            </el-table-column>
+            <el-table-column property="accounts" label="账户" width="280" align="center">
             </el-table-column>
             <el-table-column property="roleName" label="角色名称">
             </el-table-column>
@@ -66,6 +68,7 @@
           <div slot="footer" class="dialog-footer">
             <el-button @click.native="addFormVisible = false">取消</el-button>
             <el-button type="primary" @click.native="addSubmit" :loading="addLoading">提交</el-button>
+             <!-- <el-button @click="toggleSelection([searchUsers[1], searchUsers[2]])">切换第二、第三行的选中状态</el-button> -->
           </div>
           <!--工具条-->
           <el-col :span="24" class="toolbar">
@@ -173,6 +176,7 @@
         modifyShow: false,
         deleteShow: false,
         pageData:[],
+        // allSelection :[],
         // search: '',
 
       }
@@ -187,8 +191,7 @@
       this.deleteShow = global.judgePermissionName('role:delete', this.$store.getters.getPermissionName)
     },
     watch: {
-
-
+     
     },
     computed: {
       datas() {
@@ -227,6 +230,15 @@
         }
 
       },
+      // toggleSelection(rows) {
+      //   if (rows) {
+      //     rows.forEach(row => {
+      //       this.$refs.singleTable.toggleRowSelection(row);
+      //     });
+      //   } else {
+      //     this.$refs.singleTable.clearSelection();
+      //   }
+      // },
       fPage(list, type) {
         if (type == 0) {
           this.pageData = list.slice((this.currentPage - 1) * 10, (this.currentPage - 1) * 10 + this.pageSize)
@@ -234,7 +246,6 @@
         } else {
           this.searchUsers = list.slice((this.currentPageadd - 1) * 10, (this.currentPageadd - 1) * 10 + this.addpageSize)
         }
-
       },
       setCurrent(row) {
         this.$refs.singleTable1.setCurrentRow(row);
@@ -242,7 +253,6 @@
       handleSizeChange(size) {
         this.pageSize = size
         this.fPage(this.data, 0)
-
       },
       handleAddChangea(size) {
         this.addpageSize = size
@@ -256,7 +266,9 @@
       },
       handleCurrentChangeadd(val) {
         this.currentPageadd = val;
-        this.searchUser()
+         console.log(this.selection)
+        //  this.searchUser()
+        this.fPage(this.addUser, 1)
       },
       getData() {
         let self = this;
@@ -382,13 +394,25 @@
               } else {
                 getApi('addRole', addParams, function (res) {
                   if (res.data.code == 200 && res.data.message.toLowerCase() == 'ok') {
-                    vm.addVisible = vm.editLoading = false
+                    // vm.addVisible = vm.editLoading = false
                     vm.$message({
                       message: '提交成功',
                       type: 'success'
                     })
                     vm.getData()
+                  }else if(res.data.code == 400) {
+                    vm.$message({
+                      message: '新增角色中有重复信息',
+                      type: 'error'
+                    })
+
+                  } else {
+                    vm.$message({
+                      message: res.data.message,
+                      type: 'error'
+                    })
                   }
+                   vm.addVisible = vm.editLoading = false
                 })
               }
             })
@@ -407,9 +431,15 @@
         this.getUser()
 
       },
+      seleIdevry(selection, row){
+              let length = selection.length;
+              console.log(length)
+              this.selection = selection;
+      },
       seleId(selection, row) {
+        debugger
         let length = selection.length;
-        this.selection = selection;
+      
       },
       searchUser() {
         let self = this;
@@ -450,16 +480,6 @@
                   type: 'success'
                 })
                 vm.getUser()
-              } else if (res.data.code == 400) {
-                vm.$message({
-                  message: '新增角色中有重复信息',
-                  type: 'error'
-                })
-              } else {
-                vm.$message({
-                  message: res.data.message,
-                  type: 'error'
-                })
               }
               vm.boxId =[ ];
             })
