@@ -1,65 +1,14 @@
 <template>
-    <div>
-        <el-col :span="24" class="toolbar" style="padding-bottom: 0px;">
-<el-form :inline="true" :model="filters">
-    <el-form-item>
-        <el-button type="primary" @click="handleAdd" v-if="createShow">新增</el-button>
-    </el-form-item>
-    <el-form-item>
-        <el-select v-model="selectFile.value" placeholder="请选择状态">
-            <el-option v-for="item in selectFile.options" :key="item.value" :label="item.label" :value="item.value">
-            </el-option>
-        </el-select>
-    </el-form-item>
-    <el-form-item>
-        <el-date-picker v-model="startDate" type="date" format="yyyy-MM-dd" placeholder="选择最新更新日期" :picker-options="startPickerOptions" @change="selectedOnline(startDate)" >
-        </el-date-picker>
-    </el-form-item>
-    <el-form-item>
-        <el-date-picker v-model="endDate" type="date" format="yyyy-MM-dd" placeholder="选择最新更新日期" :picker-options="endPickerOptions"  @change="selectedEnd(endDate)">
-        </el-date-picker>
-    </el-form-item>
-    <el-form-item>
-        <el-button type="primary" v-on:click="searMerchantAd({adStatus: selectFile.value,createStartTime: startDate, createEndTime: endDate})"
-            v-if="lookShow">查询</el-button>
-    </el-form-item>
-    <el-form-item>
-        <el-input v-model="search" placeholder="请输入关键字"></el-input>
-    </el-form-item>
-</el-form>
-</el-col>
-<el-table ref="singleTable" :data="searchData" highlight-current-row v-loading="listLoading" style="width: 100%">
-<el-table-column width="100" property="name" label="广告名称">
-</el-table-column>
-<el-table-column property="tags" label="标签">
-</el-table-column>
-<el-table-column property="targetUrl" label="目标路径">
-</el-table-column>
-<el-table-column property="details" label="备注详情">
-</el-table-column>
-<el-table-column property="tipType" label="提示类型">
-</el-table-column>
-<el-table-column property="img1" label="轮播图">
-</el-table-column>
-<el-table-column property="img2" label="小图像">
-</el-table-column>
-<el-table-column property="Status" label="状态">
-</el-table-column>
-<el-table-column property="cmarketMerchantComment" label="广告商名称">
-</el-table-column>
-<el-table-column label="操作" width="150">
-    <template scope="scope">
-        <el-button size="small" @click="handleEdit(scope.$index, scope.row)" v-if="modifyShow">编辑</el-button>
-    </template>
-</el-table-column>
-<!-- <el-table-column label="统计" width="150">
-    <template scope="scope">
-        <el-button size="small" @click="handleprop(scope.$index, scope.row)" v-if="scope.row.indexs <0">点击显示</el-button>
-        <el-span size="small" v-if="scope.row.indexs !=-1">{{searchData.indexs}}</el-span>
-    </template>
-</el-table-column> -->
-</el-table>
-
+    <div> 
+        <el-tabs v-model="activeName" @tab-click="handleClick">
+            <el-tab-pane label="使用中" name="first"> 
+            </el-tab-pane>
+            <el-tab-pane label="已下线" name="second">
+            </el-tab-pane>
+        </el-tabs>
+        <!-- table列表 -->
+   <table-use ref="chil" v-on:listenHandleAdd ="handleAdd" v-bind:searchData ="searchData" :istab="istab" :tableData ="tableData" :totalPage ="totalPage" v-on:fPage ="fPage"></table-use>
+ 
 <!--编辑界面-->
 <el-dialog title="编辑" v-model="editFormVisible" :close-on-click-modal="false">
     <el-form :model="editForm" label-width="80px" :rules="editFormRules" ref="editForm">
@@ -147,6 +96,17 @@
 <!--新增界面-->
 <el-dialog title="新增" v-model="addFormVisible" :close-on-click-modal="false">
     <el-form :model="addForm" label-width="80px" :rules="addFormRules" ref="addForm">
+        <el-form-item label="广告商名称" prop="name">
+            <el-input v-model="addForm.name" auto-complete="off" placeholder="请输入广告名称"></el-input>
+        </el-form-item>
+         <el-span class="second">  
+            <el-input type="text" name="makeupCo" id="makeupCo" class="makeinp" onfocus="setfocus(this)" oninput="setinput(this);" placeholder="请选择或输入"/>  
+           
+           <el-select v-model="addForm.merchantId" placeholder="请选择广告商ID" id="typenum" onchange="changeF(this)" size="10" v-show="isShow">
+                <el-option v-for="item in neameIds" :key="item.id" :label="item.comment" :value="item.id">
+                </el-option>
+           </el-select>
+        </el-span>  
         <el-form-item label="广告名称" prop="name">
             <el-input v-model="addForm.name" auto-complete="off" placeholder="请输入广告名称"></el-input>
         </el-form-item>
@@ -200,7 +160,6 @@
             </el-upload>
             <el-label>上传图片大小为120*120px </el-label>
         </el-form-item>
-
         <el-form-item label="权重" prop="addweightNo">
             <el-select v-model="addForm.addweightNo" placeholder="请选择权重">
                 <el-option v-for="item in weightNos.options" :key="item.value" :label="item.label" :value="item.value">
@@ -215,16 +174,12 @@
     </div>
 </el-dialog>
 
-<el-col :span="24" class="toolbar">
-    <el-pagination layout="total, sizes, prev, pager, next" @current-change="handleCurrentChange" @size-change="handleSizeChange"
-        :page-size="pageSize" :page-sizes="pageSizes" :total="totalPage" style="float:right;">
-</el-pagination>
-</el-col>
+
 
 </div>
 </template>
 <script>
-
+   import tableUse from '../components/advites/tableUse'
     import { getApi, root } from '../api/api'
     import global from '../assets/js/global'
 
@@ -238,8 +193,9 @@
                 }
             };
             return {
-                indexs:"",
-
+                 activeName: 'first',
+                 istab:0,
+                 isShow:false,
                 totalPage: 0,
                 currentPage: 1,
                 pageSize: 10,
@@ -428,7 +384,10 @@
                 end:"",
             }
         },
-        components: {},
+        components: {
+            tableUse,
+           
+        },
         mounted() {
             let userParams = {
                 adStatus: '',
@@ -443,6 +402,22 @@
             this.modifyShow = global.judgePermissionName('advertis:modify', this.$store.getters.getPermissionName)
             this.deleteShow = global.judgePermissionName('advertis:delete', this.$store.getters.getPermissionName)
             this.lookShow = global.judgePermissionName('advertis:view', this.$store.getters.getPermissionName)
+            // $b = $(".headerOl");
+            var  $b = document.getElementById("makeupCo");  
+            var  $a = document.getElementById("typenum");
+           
+            // $(document).on({
+            //     "click": function(e) {
+            //         var src = e.target;
+            //         if(src.id && (src.id === "a" ||src.id === "b")) {
+            //             return false;
+            //         } else {
+            //             // $b.hide();
+            //             isShow =false
+            //             alert(222)
+            //         }
+            //     }
+            // });
 
         },
 
@@ -451,8 +426,8 @@
                 var search = this.search;
                 if (search) {
 
-                    let ddd = this.tableData.filter(function(item) {            
-                                    return Object.keys(item).some(function(key) {
+                    let ddd = this.tableData.filter(function(item) {         
+                             return Object.keys(item).some(function(key) {
                             return String(item[key]).toLowerCase().indexOf(search) > -1
                         })
                     })
@@ -481,18 +456,13 @@
             editFormVisible (val) {
               this.resetDateInfo()
             },
-            // searchData (val) {
-            //   this.totalPage = val.length
-            // }
         },
         methods: {
-            // handleprop(index ,row){
-            //   console.log(this.searchData[index].indexs)  
-            //   row.indexs =index;
-            //  this.indexs = index
-            //   console.log(this.searchData[index].indexs)
-            //   console.log(this.searchData)
-            // },
+             handleClick(tab, event) {
+                 this.istab = tab.index
+                 console.log(tab.index)
+                console.log(tab, event);
+            },
             resetDateInfo () {
               this.start = this.end = ''
             },
@@ -548,8 +518,6 @@
                 let vm = this
                 userParams.createStartTime = Date.parse(userParams.createStartTime)
                 userParams.createEndTime = Date.parse(userParams.createEndTime)
-
-
                 getApi('searMerchantAd', userParams, function (res) {
                     if (res.data.code === 200) {
                         vm.totalPage = res.data.total
@@ -557,7 +525,6 @@
                         for (var i = 0; i < vm.tableData.length; i++) {
 
                             let state = vm.tableData[i].adStatus
-                            vm.tableData[i].indexs =-1;
                             switch (state) {
                                 case 'I':
 
@@ -577,22 +544,16 @@
                                 default:
                             }
                         }
-                        vm.fPage(vm.tableData)
+                        // vm.fPage(vm.tableData)
+                        // vm.$refs.chil.fPage(vm.tableData)  
                     }
                 })
             },
 
-            fPage (list) {
-                this.tableFData = list.slice((this.currentPage - 1) * 10, (this.currentPage - 1) * 10 + this.pageSize)
-            },
-            handleCurrentChange(val) {
-                this.currentPage = val
-                this.fPage(this.tableData)
-            },
-            handleSizeChange(size) {
-                this.pageSize = size
-                this.fPage(this.tableData)
-            },
+            // fPage (list) {
+            //     this.tableFData = list.slice((this.currentPage - 1) * 10, (this.currentPage - 1) * 10 + this.pageSize)
+            // },
+           
             // 显示编辑界面
             handleEdit(index, row) {
                 this.editFormVisible = true
@@ -787,6 +748,19 @@
 <style lang="less" rel="stylesheet/less" scoped>
 .is-required .el-form-item__label {
     text-align:left !important;
+}
+.el-tabs__nav-scroll .el-tabs__active-bar{
+       background-color: #fff !important;
+}
+.el-tabs .el-tabs__item {
+   font-size: 20px !important;
+    background: #ccc;
+    margin-right: 20px;
+    border: 1px solid #bfcbd9;
+}
+.el-tabs__item.is-active {
+    color: #20a0ff;
+    background: red;
 }
 .avatar-uploader-icon {
     font-size: 28px;

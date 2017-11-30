@@ -3,6 +3,7 @@ import Vuex from 'vuex'
 import mutations from './mutations'
 import actions from './actions'
 import getters from './getters'
+import advers from './advers'
 
 Vue.use(Vuex)
 
@@ -16,7 +17,8 @@ const state = {
     accounts: ''
   },
   roleName: '',
-  permissionName: []
+  permissionName: [],
+  
 }
 
 // 创建 store 实例
@@ -24,5 +26,7 @@ export default new Vuex.Store({
   actions,
   getters,
   state,
-  mutations
+  mutations,
+  advers
+
 })

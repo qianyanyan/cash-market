@@ -126,7 +126,6 @@
     </el-dialog>
 
     <el-col :span="24" class="toolbar">
-      <!--<el-button type="danger" @click="batchRemove" :disabled="this.sels.length===0">批量删除</el-button>-->
       <el-pagination layout="total, sizes, prev, pager, next" @current-change="handleCurrentChange" @size-change="handleSizeChange" :page-size="pageSize" :page-sizes="pageSizes" :total="totalPage" style="float:right;">
       </el-pagination>
     </el-col>

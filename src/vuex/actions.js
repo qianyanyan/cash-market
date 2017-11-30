@@ -21,5 +21,8 @@ export default {
       }
       context.commit('changeIndexInfo', val)
     })
-  }
+  },
+  
+
+
 }

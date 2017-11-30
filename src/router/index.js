@@ -12,6 +12,7 @@ import Update from '../view/update'
 import Merchant from '../view/merchant'
 import Dictionary from '../view/dictionary'
 import Advertis from '../view/advertis'
+import Advers from '../view/advers'
 import Test from '../view/test'
 import Err from '../components/404'
 
@@ -56,7 +57,8 @@ let router = new Router({
         { path: '/resource', component: Resource, name: '资源管理' },
         { path: '/merchant', component: Merchant, name: '广告商管理' },
         { path: '/dictionary', component: Dictionary, name: '字典管理' },
-        { path: '/advertis', component: Advertis, name: '广告操作' }
+        { path: '/advertis', component: Advertis, name: '广告操作' },
+        { path: '/advers', component: Advers, name: '全部广告' }
 
       ]
     }
